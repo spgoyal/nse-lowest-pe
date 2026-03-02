@@ -1,0 +1,32 @@
+name: Update NSE Lowest PE Data
+
+on:
+  schedule:
+    - cron: '30 14 * * *'   # 8:00 PM IST = 14:30 UTC
+  workflow_dispatch:        # Allows manual trigger from GitHub
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install pandas yfinance
+
+      - name: Run scraper
+        run: python scripts/update_pe_data.py
+
+      - name: Commit & Push changes
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add data/pe_data.csv
+          git commit -m "Auto-update: Latest NSE PE data" || echo "No changes"
+          git push
